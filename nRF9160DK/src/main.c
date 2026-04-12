@@ -10,9 +10,6 @@ LOG_MODULE_REGISTER(L2E2, LOG_LEVEL_INF);
 
 #define NRF_MODEM_LIB_SHMEM_TX_HEAP_OVERHEAD_SIZE 128
 
-#define NRF_MODEM_IPC_IRQ DT_IRQ_BY_IDX(DT_NODELABEL(ipc), 0, irq)
-BUILD_ASSERT(IPC_IRQn == NRF_MODEM_IPC_IRQ, "NRF_MODEM_IPC_IRQ mismatch");
-
 struct nrf_modem_lib_dfu_cb {
 	void (*callback)(int dfu_res, void *ctx);
 	void *context;
@@ -37,7 +34,6 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 {
 	LOG_INF("Event: %d | NW Reg: %d", evt->type, evt->nw_reg_status);
     switch (evt->type) {
-	/* STEP 7.1 - On changed registration status, print status */
 	case LTE_LC_EVT_NW_REG_STATUS:
 		if ((evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
 			(evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)) {
@@ -48,7 +44,6 @@ static void lte_handler(const struct lte_lc_evt *const evt)
 				"Connected - home network" : "Connected - roaming");
 
 		break;
-	/* STEP 7.2 - On event RRC update, print RRC mode */
 	case LTE_LC_EVT_RRC_UPDATE:
 		LOG_INF("RRC mode: %s", evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED ?
 				"Connected" : "Idle");
