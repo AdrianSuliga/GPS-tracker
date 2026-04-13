@@ -11,6 +11,20 @@ config COAP_TX_RESOURCE
     string "CoAP resource - TX channel of GPS tracker"
     default "large-update"
 
+config GNSS_PERIODIC_INTERVAL
+    int "Fix interval for periodic GNSS fixes"
+    range 10 65535
+    default 120
+    help
+        Fix interval (in seconds) for periodic fixes
+
+config GNSS_PERIODIC_TIMEOUT
+    int "Fix timeout for periodic GNSS fixes"
+    range 0 65535
+    default 480
+    help
+      Fix timeout (in seconds) for periodic fixes
+
 endmenu
 
 menu "Zephyr Kernel"

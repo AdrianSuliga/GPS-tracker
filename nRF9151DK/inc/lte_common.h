@@ -3,7 +3,6 @@
 
 #include <zephyr/kernel.h>
 #include <modem/lte_lc.h>
-#include <modem/nrf_modem_lib.h>
 
 extern struct k_sem lte_connected;
 

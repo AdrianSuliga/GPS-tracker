@@ -38,23 +38,28 @@ int main()
 
     LOG_INF("CoAP connection setup complete");
 
-    // Once CoAP connection is prepared, send sample GNSS data
-    struct gnss_data sample = {
-        .longitude = 10.0f,
-        .latitude = 12.0f,
-        .altitude = 101.1f,
-        .time_str = "12:00:00.000"
-    };
-
-    LOG_INF("Sending GNSS sample to %s", CONFIG_COAP_SERVER_HOSTNAME);
-
-    err = coap_put(&sample, sizeof(struct gnss_data));
-    if (err < 0) {
-        LOG_ERR("CoAP PUT failed, error %d", err);
+    // Once CoAP connection is established, start GNSS
+    err = gnss_init_and_start();
+    if (err) {
+        LOG_ERR("GNSS could not start, error %d", err);
         return err;
     }
 
-    LOG_INF("Message sent successfully");
+    LOG_INF("GNSS setup complete");
+
+    while (1) {
+        k_sem_take(&gps_fix_found, K_FOREVER);
+
+        struct gnss_data gps_data = get_fix();
+
+        err = coap_put(gps_data);
+        if (err) {
+            LOG_ERR("Failed to send CoAP data");
+            continue;
+        }
+
+        LOG_INF("New GPS data sent");
+    }
 
     return 0;
 }
