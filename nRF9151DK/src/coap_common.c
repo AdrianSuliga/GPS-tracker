@@ -89,7 +89,7 @@ int coap_init()
     return 0;
 }
 
-int coap_put(struct gnss_data *data)
+int coap_put(struct gnss_data data)
 {
     int err;
     struct coap_packet coap_request;
@@ -128,8 +128,8 @@ int coap_put(struct gnss_data *data)
 
     char msg[256];
     uint16_t n = snprintf(msg, sizeof(msg), "{long: %.6f,\nlat: %.6f,\nalt:%.2f,\ntime:%s}",
-                            data->longitude, data->latitude,
-                            data->altitude, data->time_str);
+                            data.longitude, data.latitude,
+                            data.altitude, data.time_str);
 
     err = coap_packet_append_payload(&coap_request, (uint8_t*)msg, n);
     if (err < 0) {

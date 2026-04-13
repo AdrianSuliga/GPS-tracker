@@ -9,6 +9,6 @@
 
 int coap_init();
 
-int coap_put(struct gnss_data *data);
+int coap_put(struct gnss_data data);
 
 #endif /* COAP_COMMON_H */
