@@ -5,4 +5,8 @@ project(GPS-tracker)
 
 zephyr_include_directories(inc)
 
-target_sources(app PRIVATE src/main.c src/lte_common.c)
+target_sources(app PRIVATE 
+    src/main.c
+    src/lte_common.c
+    src/coap_common.c
+    src/gnss_common.c)

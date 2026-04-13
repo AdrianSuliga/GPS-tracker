@@ -1,4 +1,5 @@
 #include "lte_common.h"
+#include "gnss_common.h"
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
@@ -26,6 +27,18 @@ int main()
     k_sem_take(&lte_connected, K_FOREVER);
 
     LOG_INF("Connected to LTE network");
+
+    // Once DK connected to LTE network, send sample
+    // GPS data to COAP server
+    struct gnss_data sample = {
+        .longitude = 10.0f,
+        .latitude = 12.0f,
+        .altitude = 101.1f,
+        .time_str = "12:00:00.000"
+    };
+
+    LOG_INF("Sending GNSS sample to COAP server:");
+    log_gnss_data(&sample);
 
     return 0;
 }
