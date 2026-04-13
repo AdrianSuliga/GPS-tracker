@@ -1,0 +1,20 @@
+menu "GPS tracker" 
+
+config COAP_SERVER_HOSTNAME
+    string "CoAP server hostname"
+
+config COAP_SERVER_PORT
+    int "CoAP server port"
+    default 5683
+
+config COAP_TX_RESOURCE
+    string "CoAP resource - TX channel of GPS tracker"
+    default "large-update"
+
+endmenu
+
+menu "Zephyr Kernel"
+
+source "Kconfig.zephyr"
+
+endmenu

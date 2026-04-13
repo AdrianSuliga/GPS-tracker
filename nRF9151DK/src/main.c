@@ -1,10 +1,11 @@
 #include "lte_common.h"
 #include "gnss_common.h"
+#include "coap_common.h"
 
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 
-LOG_MODULE_REGISTER(GPS_Main, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Tracker_Main, LOG_LEVEL_INF);
 
 int main()
 {
@@ -28,8 +29,16 @@ int main()
 
     LOG_INF("Connected to LTE network");
 
-    // Once DK connected to LTE network, send sample
-    // GPS data to COAP server
+    // Once DK connected to LTE network, setup CoAP
+    err = coap_init();
+    if (err) {
+        LOG_ERR("CoAP configuration failed, error %d", err);
+        return err;
+    }
+
+    LOG_INF("CoAP connection setup complete");
+
+    // Once CoAP connection is prepared, send sample GNSS data
     struct gnss_data sample = {
         .longitude = 10.0f,
         .latitude = 12.0f,
@@ -37,8 +46,15 @@ int main()
         .time_str = "12:00:00.000"
     };
 
-    LOG_INF("Sending GNSS sample to COAP server:");
-    log_gnss_data(&sample);
+    LOG_INF("Sending GNSS sample to %s", CONFIG_COAP_SERVER_HOSTNAME);
+
+    err = coap_put(&sample, sizeof(struct gnss_data));
+    if (err < 0) {
+        LOG_ERR("CoAP PUT failed, error %d", err);
+        return err;
+    }
+
+    LOG_INF("Message sent successfully");
 
     return 0;
 }
