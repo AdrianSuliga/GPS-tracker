@@ -3,7 +3,7 @@
 #include <zephyr/logging/log.h>
 #include <dk_buttons_and_leds.h>
 
-LOG_MODULE_REGISTER(GPS_LTE, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(Tracker_LTE, LOG_LEVEL_INF);
 
 K_SEM_DEFINE(lte_connected, 0, 1);
 
