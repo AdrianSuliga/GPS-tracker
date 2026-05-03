@@ -72,24 +72,7 @@ static int client_init()
     return 0;
 }
 
-int coap_init()
-{
-    int err;
-    
-    err = server_resolve();
-    if (err != 0) {
-        return err;
-    }
-
-    err = client_init();
-    if (err != 0) {
-        return err;
-    }
-
-    return 0;
-}
-
-int coap_put(struct gnss_data data)
+static int coap_put(char *data, uint16_t size)
 {
     int err;
     struct coap_packet coap_request;
@@ -126,12 +109,7 @@ int coap_put(struct gnss_data data)
         return err;
     }
 
-    char msg[256];
-    uint16_t n = snprintf(msg, sizeof(msg), "{long: %.6f,\nlat: %.6f,\nalt:%.2f,\ntime:%s}",
-                            data.longitude, data.latitude,
-                            data.altitude, data.time_str);
-
-    err = coap_packet_append_payload(&coap_request, (uint8_t*)msg, n);
+    err = coap_packet_append_payload(&coap_request, (uint8_t*)data, size);
     if (err < 0) {
         LOG_ERR("Failed to append payload to CoAP packet, error %d", err);
         return err;
@@ -146,4 +124,109 @@ int coap_put(struct gnss_data data)
     LOG_INF("CoAP PUT request sent");
 
     return 0;
+}
+
+int coap_init()
+{
+    int err;
+    
+    err = server_resolve();
+    if (err != 0) {
+        return err;
+    }
+
+    err = client_init();
+    if (err != 0) {
+        return err;
+    }
+
+    return 0;
+}
+
+int coap_ping()
+{
+    char msg[256];
+    uint16_t n = snprintf(msg, sizeof(msg), "{}");
+
+    return coap_put(msg, n);
+}
+
+int coap_put_gnss(struct gnss_data data)
+{
+    char msg[256];
+    uint16_t n = snprintf(msg, sizeof(msg), "{gnss: {long: %.6f,\nlat: %.6f,\nalt:%.2f,\ntime:%s}}",
+                            data.longitude, data.latitude,
+                            data.altitude, data.time_str);
+
+    return coap_put(msg, n);
+}
+
+int coap_put_lte(struct lte_geo_data *data)
+{
+    char msg[512];
+    int offset = 0;
+
+    offset += snprintf(msg + offset, sizeof(msg) - offset,
+        "{"
+        "\"current_cell\":{"
+            "\"mcc\":%d,"
+            "\"mnc\":%d,"
+            "\"id\":%u,"
+            "\"tac\":%u,"
+            "\"rsrp\":%d"
+        "},",
+        data->current_cell.mcc,
+        data->current_cell.mnc,
+        data->current_cell.id,
+        data->current_cell.tac,
+        data->current_cell.rsrp
+    );
+
+    offset += snprintf(msg + offset, sizeof(msg) - offset,
+        "\"neighbor_cells\":["
+    );
+
+    for (int i = 0; i < data->ncells_count; i++) {
+        offset += snprintf(msg + offset, sizeof(msg) - offset,
+            "{"
+                "\"earfcn\":%u,"
+                "\"pci\":%u,"
+                "\"rsrp\":%d"
+            "}%s",
+            data->ncells[i].earfcn,
+            data->ncells[i].pci,
+            data->ncells[i].rsrp,
+            (i < data->ncells_count - 1) ? "," : ""
+        );
+    }
+
+    offset += snprintf(msg + offset, sizeof(msg) - offset, "],");
+
+    offset += snprintf(msg + offset, sizeof(msg) - offset,
+        "\"gci_cells\":["
+    );
+
+    for (int i = 0; i < data->gci_cells_count; i++) {
+        offset += snprintf(msg + offset, sizeof(msg) - offset,
+            "{"
+                "\"mcc\":%d,"
+                "\"mnc\":%d,"
+                "\"id\":%u,"
+                "\"tac\":%u,"
+                "\"rsrp\":%d"
+            "}%s",
+            data->gci_cells[i].mcc,
+            data->gci_cells[i].mnc,
+            data->gci_cells[i].id,
+            data->gci_cells[i].tac,
+            data->gci_cells[i].rsrp,
+            (i < data->gci_cells_count - 1) ? "," : ""
+        );
+    }
+
+    offset += snprintf(msg + offset, sizeof(msg) - offset, "]"
+        "}"
+    );
+
+    return coap_put(msg, offset);
 }

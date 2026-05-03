@@ -3,12 +3,17 @@
 
 #include <stdio.h>
 #include "gnss_common.h"
+#include "lte_common.h"
 
 #define COAP_VERSION 1
 #define COAP_MAX_MSG_LEN 1024
 
 int coap_init();
 
-int coap_put(struct gnss_data data);
+int coap_ping();
+
+int coap_put_gnss(struct gnss_data data);
+
+int coap_put_lte(struct lte_geo_data *data);
 
 #endif /* COAP_COMMON_H */
