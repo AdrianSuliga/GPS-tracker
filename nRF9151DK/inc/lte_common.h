@@ -4,7 +4,37 @@
 #include <zephyr/kernel.h>
 #include <modem/lte_lc.h>
 
+#define MAX_NCELLS 10
+#define MAX_GCI_CELLS 15
+
 extern struct k_sem lte_connected;
+extern struct k_sem neighbors_found;
+
+struct cell_data {
+    int mcc;
+    int mnc;
+    uint32_t id;
+    uint32_t tac;
+    int16_t rsrp;
+};
+
+struct ncell_data {
+    uint32_t earfcn;
+    uint16_t pci;
+    int16_t rsrp;
+};
+
+struct lte_geo_data {
+    struct cell_data current_cell;
+    
+    uint8_t ncells_count;
+    struct ncell_data ncells[MAX_NCELLS];
+
+    uint8_t gci_cells_count;
+    struct cell_data gci_cells[MAX_GCI_CELLS];
+};
+
+extern struct lte_geo_data geo_data;
 
 // Handler for LTE events
 void lte_handler(const struct lte_lc_evt *const evt);
