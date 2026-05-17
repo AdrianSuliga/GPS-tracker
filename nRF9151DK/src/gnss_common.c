@@ -9,7 +9,11 @@ LOG_MODULE_REGISTER(Tracker_GNSS, LOG_LEVEL_INF);
 
 K_SEM_DEFINE(gps_fix_found, 0, 1);
 
-static struct nrf_modem_gnss_pvt_data_frame pvt_data;
+static struct nrf_modem_gnss_pvt_data_frame pvt_data = {
+    .longitude = 0.0f,
+    .latitude = 0.0f,
+    .altitude = 0.0f
+};
 
 void log_gnss_data(struct gnss_data data)
 {
@@ -116,6 +120,12 @@ int gnss_init_and_start()
 		LOG_ERR("Failed to start GNSS, error %d", err);
 		return err;
 	}
+
+    err = nrf_modem_gnss_prio_mode_enable();
+    if (err != 0) {
+        LOG_ERR("Failed to enable GNSS priority mode, error %d", err);
+        return err;
+    }
 
     return 0;
 }

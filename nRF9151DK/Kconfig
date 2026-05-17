@@ -7,9 +7,13 @@ config COAP_SERVER_PORT
     int "CoAP server port"
     default 5683
 
-config COAP_TX_RESOURCE
-    string "CoAP resource - TX channel of GPS tracker"
+config COAP_GNSS_RESOURCE
+    string "CoAP resource - GNSS channel for GPS tracker"
     default "large-update"
+
+config COAP_GEO_RESOURCE
+    string "CoAP resource - GEO data for GPS tracker"
+    default "validate"
 
 config GNSS_PERIODIC_INTERVAL
     int "Fix interval for periodic GNSS fixes"

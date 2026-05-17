@@ -72,7 +72,7 @@ static int client_init()
     return 0;
 }
 
-static int coap_put(char *data, uint16_t size)
+static int coap_put(char *data, uint16_t size, char *resource)
 {
     int err;
     struct coap_packet coap_request;
@@ -88,8 +88,8 @@ static int coap_put(char *data, uint16_t size)
     }
     
     err = coap_packet_append_option(&coap_request, COAP_OPTION_URI_PATH,
-                                    (uint8_t*)CONFIG_COAP_TX_RESOURCE,
-                                    strlen(CONFIG_COAP_TX_RESOURCE));
+                                    (uint8_t*)resource,
+                                    strlen(resource));
     if (err < 0) {
         LOG_ERR("Failed to append CoAP option, error %d", err);
         return err;
@@ -148,7 +148,7 @@ int coap_ping()
     char msg[256];
     uint16_t n = snprintf(msg, sizeof(msg), "{}");
 
-    return coap_put(msg, n);
+    return coap_put(msg, n, CONFIG_COAP_GNSS_RESOURCE);
 }
 
 int coap_put_gnss(struct gnss_data data)
@@ -158,7 +158,7 @@ int coap_put_gnss(struct gnss_data data)
                             data.longitude, data.latitude,
                             data.altitude, data.time_str);
 
-    return coap_put(msg, n);
+    return coap_put(msg, n, CONFIG_COAP_GNSS_RESOURCE);
 }
 
 int coap_put_lte(struct lte_geo_data *data)
@@ -181,26 +181,6 @@ int coap_put_lte(struct lte_geo_data *data)
         data->current_cell.tac,
         data->current_cell.rsrp
     );
-
-    offset += snprintf(msg + offset, sizeof(msg) - offset,
-        "\"neighbor_cells\":["
-    );
-
-    for (int i = 0; i < data->ncells_count; i++) {
-        offset += snprintf(msg + offset, sizeof(msg) - offset,
-            "{"
-                "\"earfcn\":%u,"
-                "\"pci\":%u,"
-                "\"rsrp\":%d"
-            "}%s",
-            data->ncells[i].earfcn,
-            data->ncells[i].pci,
-            data->ncells[i].rsrp,
-            (i < data->ncells_count - 1) ? "," : ""
-        );
-    }
-
-    offset += snprintf(msg + offset, sizeof(msg) - offset, "],");
 
     offset += snprintf(msg + offset, sizeof(msg) - offset,
         "\"gci_cells\":["
@@ -228,5 +208,5 @@ int coap_put_lte(struct lte_geo_data *data)
         "}"
     );
 
-    return coap_put(msg, offset);
+    return coap_put(msg, offset, CONFIG_COAP_GEO_RESOURCE);
 }

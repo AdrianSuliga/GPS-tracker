@@ -32,7 +32,7 @@ void lte_handler(const struct lte_lc_evt *const evt)
                     "Connected" : "Idle");
             break;
 
-        /*case LTE_LC_EVT_PSM_UPDATE:
+        case LTE_LC_EVT_PSM_UPDATE:
             LOG_INF("PSM parameter updated");
             if (evt->psm_cfg.active_time == -1) {
                 LOG_ERR("Network rejected PSM parameter. Failed to enable PSM.");
@@ -41,23 +41,16 @@ void lte_handler(const struct lte_lc_evt *const evt)
 
         case LTE_LC_EVT_EDRX_UPDATE:
             LOG_INF("eDRX parameter updated");
-            break;*/
+            break;
 
         case LTE_LC_EVT_NEIGHBOR_CELL_MEAS:
-            LOG_INF("Neighbor cell measurement result received");
+            LOG_INF("Neighbor cell measurement result received, GCIs = %d", evt->cells_info.gci_cells_count);
             
             geo_data.current_cell.mcc = evt->cells_info.current_cell.mcc;
             geo_data.current_cell.mnc = evt->cells_info.current_cell.mnc;
             geo_data.current_cell.id = evt->cells_info.current_cell.id;
             geo_data.current_cell.tac = evt->cells_info.current_cell.tac;
             geo_data.current_cell.rsrp = evt->cells_info.current_cell.rsrp;
-
-            geo_data.ncells_count = MIN(evt->cells_info.ncells_count, MAX_NCELLS);
-            for (uint8_t idx = 0; idx < geo_data.ncells_count; ++idx) {
-                geo_data.ncells[idx].earfcn = evt->cells_info.neighbor_cells[idx].earfcn;
-                geo_data.ncells[idx].pci = evt->cells_info.neighbor_cells[idx].phys_cell_id;
-                geo_data.ncells[idx].rsrp = evt->cells_info.neighbor_cells[idx].rsrp;
-            }
 
             geo_data.gci_cells_count = MIN(evt->cells_info.gci_cells_count, MAX_GCI_CELLS);
             for (uint8_t idx = 0; idx < geo_data.gci_cells_count; ++idx) {
@@ -89,7 +82,7 @@ int modem_configure()
     }
 
     LOG_INF("Modem library initialized");
-    /*LOG_INF("Requesting PSM");
+    LOG_INF("Requesting PSM");
 
     err = lte_lc_psm_req(false);
     if (err) {
@@ -101,13 +94,19 @@ int modem_configure()
     err = lte_lc_edrx_req(false);
     if (err) {
         LOG_ERR("Failed to request eDRX from modem, error %d", err);
-    }*/
+    }
 
     LOG_INF("Connecting to LTE network");
 
     err = lte_lc_connect_async(lte_handler);
     if (err) {
         LOG_ERR("Error when calling lte_lc_connect_async, error %d", err);
+        return err;
+    }
+
+    err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
+    if (err) {
+        LOG_ERR("Error when setting LTE mode to, error %d", err);
         return err;
     }
 
