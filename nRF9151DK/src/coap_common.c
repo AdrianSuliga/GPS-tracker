@@ -146,7 +146,7 @@ int coap_init()
 int coap_put_gnss(struct gnss_data *data)
 {
     char msg[256];
-    uint16_t n = snprintf(msg, sizeof(msg), "{gnss: {long: %.6f,\nlat: %.6f,\nalt: %.2f,\ntime: %u-%u-%u %u:%u:%u}}",
+    uint16_t n = snprintf(msg, sizeof(msg), "{gnss: {long:%.6f,lat:%.6f,alt:%.2f,time:%u-%u-%u %u:%u:%u}}",
                             data->longitude, data->latitude, data->altitude,
                             data->time.year, data->time.month, data->time.day,
                             data->time.hour, data->time.minute, data->time.second);
@@ -160,13 +160,13 @@ int coap_put_lte(struct lte_geo_data *data)
     int offset = 0;
 
     offset += snprintf(msg + offset, sizeof(msg) - offset,
-        "{"
-        "\"current_cell\":{"
-            "\"mcc\":%d,"
-            "\"mnc\":%d,"
-            "\"id\":%u,"
-            "\"tac\":%u,"
-            "\"rsrp\":%d"
+        "{geo: {"
+        "current_cell: {"
+            "mcc:%d,"
+            "mnc:%d,"
+            "id:%u,"
+            "tac:%u,"
+            "rsrp:%d"
         "},",
         data->current_cell.mcc,
         data->current_cell.mnc,
@@ -176,17 +176,17 @@ int coap_put_lte(struct lte_geo_data *data)
     );
 
     offset += snprintf(msg + offset, sizeof(msg) - offset,
-        "\"gci_cells\":["
+        " gci_cells: ["
     );
 
     for (int i = 0; i < data->gci_cells_count; i++) {
         offset += snprintf(msg + offset, sizeof(msg) - offset,
             "{"
-                "\"mcc\":%d,"
-                "\"mnc\":%d,"
-                "\"id\":%u,"
-                "\"tac\":%u,"
-                "\"rsrp\":%d"
+                "mcc:%d,"
+                "mnc:%d,"
+                "id:%u,"
+                "tac:%u,"
+                "rsrp:%d"
             "}%s",
             data->gci_cells[i].mcc,
             data->gci_cells[i].mnc,
@@ -198,7 +198,7 @@ int coap_put_lte(struct lte_geo_data *data)
     }
 
     offset += snprintf(msg + offset, sizeof(msg) - offset, "]"
-        "}"
+        "}}"
     );
 
     return coap_put(msg, offset, CONFIG_COAP_GEO_RESOURCE);

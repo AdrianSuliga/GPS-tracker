@@ -41,10 +41,7 @@ int main()
     while (true) {
         // Wait for GPS data
         LOG_INF("Waiting for GPS data");
-        err = k_sem_take(&gps_fix_found, K_MINUTES(1));
-        if (err == -EAGAIN) {
-            LOG_ERR("GPS could not acquire fix, timeout");
-        }
+        err = k_sem_take(&gps_fix_found, K_SECONDS(10));
 
         // Establish LTE connection to send data
         LOG_INF("Waiting for LTE connection");
