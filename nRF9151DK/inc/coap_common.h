@@ -10,9 +10,7 @@
 
 int coap_init();
 
-int coap_ping();
-
-int coap_put_gnss(struct gnss_data data);
+int coap_put_gnss(struct gnss_data *data);
 
 int coap_put_lte(struct lte_geo_data *data);
 

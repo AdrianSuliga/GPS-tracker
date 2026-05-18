@@ -46,8 +46,6 @@ int main()
             LOG_ERR("GPS could not acquire fix, timeout");
         }
 
-        struct gnss_data gps_data = get_fix();
-
         // Establish LTE connection to send data
         LOG_INF("Waiting for LTE connection");
         err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL);
@@ -67,7 +65,7 @@ int main()
         }
 
         // Send GPS data to CoAP server
-        err = coap_put_gnss(gps_data);
+        err = coap_put_gnss(&gps_data);
         if (err) {
             LOG_ERR("Failed to send CoAP data");
         } else {

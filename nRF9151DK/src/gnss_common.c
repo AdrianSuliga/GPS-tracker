@@ -9,32 +9,15 @@ LOG_MODULE_REGISTER(Tracker_GNSS, LOG_LEVEL_INF);
 
 K_SEM_DEFINE(gps_fix_found, 0, 1);
 
-static struct nrf_modem_gnss_pvt_data_frame pvt_data = {
+struct gnss_data gps_data = {
     .longitude = 0.0f,
     .latitude = 0.0f,
-    .altitude = 0.0f
+    .altitude = 0.0f,
+    .time = { .year = 0, .month = 1, .day = 1,
+              .hour = 0, .minute = 0, .second = 0 }
 };
 
-void log_gnss_data(struct gnss_data data)
-{
-    LOG_INF("(Long=%.6f, Lat=%.6f, Att=%.2f, Time=[%s])", 
-            data.longitude,
-            data.latitude,
-            data.altitude,
-            data.time_str);
-}
-
-struct gnss_data get_fix()
-{
-    struct gnss_data result = {
-        .longitude = pvt_data.longitude,
-        .latitude = pvt_data.latitude,
-        .altitude = pvt_data.altitude,
-        .time_str = ""
-    };
-
-    return result;
-}
+static struct nrf_modem_gnss_pvt_data_frame pvt_data;
 
 static void gnss_event_handler(int event)
 {
@@ -59,6 +42,16 @@ static void gnss_event_handler(int event)
             if (pvt_data.flags & NRF_MODEM_GNSS_PVT_FLAG_FIX_VALID) {
                 LOG_INF("GNSS got fix");
 
+                gps_data.longitude = pvt_data.longitude;
+                gps_data.latitude = pvt_data.latitude;
+                gps_data.altitude = pvt_data.altitude;
+                gps_data.time.year = pvt_data.datetime.year;
+                gps_data.time.month = pvt_data.datetime.month;
+                gps_data.time.day = pvt_data.datetime.day;
+                gps_data.time.hour = pvt_data.datetime.hour;
+                gps_data.time.minute = pvt_data.datetime.minute;
+                gps_data.time.second = pvt_data.datetime.seconds;
+
                 k_sem_give(&gps_fix_found);
             }
 
@@ -80,7 +73,6 @@ static void gnss_event_handler(int event)
             break;
 
         default:
-            LOG_INF("Unknown event %d", event);
             break;
     }
 }
@@ -88,12 +80,6 @@ static void gnss_event_handler(int event)
 int gnss_init_and_start()
 {
     int err;
-
-    err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL);
-    if (err != 0) {
-        LOG_ERR("Failed to activate GNSS functional mode, error %d", err);
-        return err;
-    }
 
     err = nrf_modem_gnss_event_handler_set(gnss_event_handler);
     if (err != 0) {

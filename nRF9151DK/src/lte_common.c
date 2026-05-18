@@ -9,7 +9,10 @@ LOG_MODULE_REGISTER(Tracker_LTE, LOG_LEVEL_INF);
 K_SEM_DEFINE(lte_connected, 0, 1);
 K_SEM_DEFINE(neighbors_found, 0, 1);
 
-struct lte_geo_data geo_data;
+struct lte_geo_data geo_data = {
+    .current_cell = { .mcc = 0, .mnc = 0, .tac = 0, .id = 0, .rsrp = 0 },
+    .gci_cells_count = 0
+};
 
 void lte_handler(const struct lte_lc_evt *const evt)
 {
@@ -19,6 +22,7 @@ void lte_handler(const struct lte_lc_evt *const evt)
                 (evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_HOME) &&
                 (evt->nw_reg_status != LTE_LC_NW_REG_REGISTERED_ROAMING)
             ) {
+                dk_set_led_off(DK_LED2);
                 break;
             }
 
@@ -34,9 +38,6 @@ void lte_handler(const struct lte_lc_evt *const evt)
 
         case LTE_LC_EVT_PSM_UPDATE:
             LOG_INF("PSM parameter updated");
-            if (evt->psm_cfg.active_time == -1) {
-                LOG_ERR("Network rejected PSM parameter. Failed to enable PSM.");
-            }
             break;
 
         case LTE_LC_EVT_EDRX_UPDATE:

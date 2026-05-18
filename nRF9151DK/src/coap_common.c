@@ -143,20 +143,13 @@ int coap_init()
     return 0;
 }
 
-int coap_ping()
+int coap_put_gnss(struct gnss_data *data)
 {
     char msg[256];
-    uint16_t n = snprintf(msg, sizeof(msg), "{}");
-
-    return coap_put(msg, n, CONFIG_COAP_GNSS_RESOURCE);
-}
-
-int coap_put_gnss(struct gnss_data data)
-{
-    char msg[256];
-    uint16_t n = snprintf(msg, sizeof(msg), "{gnss: {long: %.6f,\nlat: %.6f,\nalt:%.2f,\ntime:%s}}",
-                            data.longitude, data.latitude,
-                            data.altitude, data.time_str);
+    uint16_t n = snprintf(msg, sizeof(msg), "{gnss: {long: %.6f,\nlat: %.6f,\nalt: %.2f,\ntime: %u-%u-%u %u:%u:%u}}",
+                            data->longitude, data->latitude, data->altitude,
+                            data->time.year, data->time.month, data->time.day,
+                            data->time.hour, data->time.minute, data->time.second);
 
     return coap_put(msg, n, CONFIG_COAP_GNSS_RESOURCE);
 }

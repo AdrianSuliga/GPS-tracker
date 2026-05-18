@@ -5,20 +5,25 @@
 
 extern struct k_sem gps_fix_found;
 
-// XX:XX:XX.XXX\0
-#define UTC_TIME_FORMAT_LEN 13
+struct fix_time {
+    uint16_t year;
+    uint8_t month;
+    uint8_t day;
+    uint8_t hour;
+    uint8_t minute;
+    uint8_t second;
+};
 
 struct gnss_data {
     double longitude;
     double latitude;
     double altitude;
-    char time_str[UTC_TIME_FORMAT_LEN];
+    struct fix_time time;
 };
 
-void log_gnss_data(struct gnss_data data);
+extern struct gnss_data gps_data;
 
-struct gnss_data get_fix();
-
+// Initialize and start GNSS
 int gnss_init_and_start();
 
 #endif /* GNSS_COMMON_H */
