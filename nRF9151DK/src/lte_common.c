@@ -1,7 +1,9 @@
 #include "lte_common.h"
+#include "coap_common.h"
 
 #include <zephyr/logging/log.h>
 #include <modem/nrf_modem_lib.h>
+#include <modem/modem_key_mgmt.h>
 #include <dk_buttons_and_leds.h>
 
 LOG_MODULE_REGISTER(Tracker_LTE, LOG_LEVEL_INF);
@@ -75,30 +77,42 @@ int modem_configure()
     int err;
     
     LOG_INF("Initializing modem library");
-
     err = nrf_modem_lib_init();
     if (err) {
         LOG_ERR("Failed to initialize the modem library, error %d", err);
         return err;
     }
-
     LOG_INF("Modem library initialized");
-    LOG_INF("Requesting PSM");
 
+    LOG_INF("Requesting PSM");
     err = lte_lc_psm_req(false);
     if (err) {
         LOG_ERR("Failed to request PSM from modem, error %d", err);
     }
 
     LOG_INF("Requesting eDRX");
-    
     err = lte_lc_edrx_req(false);
     if (err) {
         LOG_ERR("Failed to request eDRX from modem, error %d", err);
     }
 
-    LOG_INF("Connecting to LTE network");
+    LOG_INF("Writing PSK identity to the modem");
+    err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_IDENTITY,
+                                CONFIG_COAP_DEVICE_NAME, strlen(CONFIG_COAP_DEVICE_NAME));
+    if (err) {
+        LOG_ERR("Failed to write identity: %d\n", err);
+	    return err;
+    }
 
+    err = modem_key_mgmt_write(SEC_TAG, MODEM_KEY_MGMT_CRED_TYPE_PSK, CONFIG_COAP_SERVER_PSK, 
+			strlen(CONFIG_COAP_SERVER_PSK));
+    if (err) {
+    	LOG_ERR("Failed to write identity: %d\n", err);
+    	return err;
+    }
+    LOG_INF("Identity written");
+
+    LOG_INF("Connecting to LTE network");
     err = lte_lc_connect_async(lte_handler);
     if (err) {
         LOG_ERR("Error when calling lte_lc_connect_async, error %d", err);

@@ -5,6 +5,8 @@
 #include <zephyr/net/coap.h>
 #include <zephyr/logging/log.h>
 #include <zephyr/random/random.h>
+#include <zephyr/net/tls_credentials.h>
+#include <modem/modem_key_mgmt.h>
 
 LOG_MODULE_REGISTER(Tracker_CoAP, LOG_LEVEL_INF);
 
@@ -53,10 +55,37 @@ static int client_init()
 {
     int err;
 
-    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_DTLS_1_2);
     if (sock < 0) {
         LOG_ERR("Failed to create CoAP socket, error %d", sock);
         return sock;
+    }
+
+    enum {
+        NONE = 0,
+        OPTIONAL = 1,
+        REQUIRED = 2
+    };
+
+    int verify = REQUIRED;
+
+    err = setsockopt(sock, SOL_TLS, TLS_PEER_VERIFY, &verify, sizeof(verify));
+    if (err) {
+	    LOG_ERR("Failed to setup peer verification, errno %d\n", errno);
+	    return -errno;
+    }
+
+    err = setsockopt(sock, SOL_TLS, TLS_HOSTNAME, CONFIG_COAP_SERVER_HOSTNAME, strlen(CONFIG_COAP_SERVER_HOSTNAME));
+    if (err) {
+        LOG_ERR("Failed to setup TLS hostname (%s), errno %d\n", CONFIG_COAP_SERVER_HOSTNAME, errno);
+	    return -errno;
+    }
+
+    sec_tag_t sec_tag_list[] = { SEC_TAG };
+    err = setsockopt(sock, SOL_TLS, TLS_SEC_TAG_LIST, sec_tag_list, sizeof(sec_tag_t) * ARRAY_SIZE(sec_tag_list));
+    if (err) {
+        LOG_ERR("Failed to setup socket security tag, errno %d\n", errno);
+	    return -errno;
     }
 
     err = connect(sock, (const struct sockaddr*)&server, sizeof(struct sockaddr_in));
@@ -129,7 +158,7 @@ static int coap_put(char *data, uint16_t size, char *resource)
 int coap_init()
 {
     int err;
-    
+
     err = server_resolve();
     if (err != 0) {
         return err;

@@ -1,5 +1,13 @@
 menu "GPS tracker" 
 
+config COAP_DEVICE_NAME
+    string "Device resource name - this will be the device name on the CoAP server"
+    default "cali.test.nrf91"
+
+config COAP_SERVER_PSK
+    string "Server PSK"
+    default "2e666f726e69756d"
+
 config COAP_SERVER_HOSTNAME
     string "CoAP server hostname"
 

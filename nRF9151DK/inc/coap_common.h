@@ -8,6 +8,8 @@
 #define COAP_VERSION 1
 #define COAP_MAX_MSG_LEN 1024
 
+#define SEC_TAG 12
+
 int coap_init();
 
 int coap_put_gnss(struct gnss_data *data);
