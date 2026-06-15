@@ -1,10 +1,10 @@
 import asyncio
 from aiocoap import *
 
-COAP_SERVER = "coap://californium.eclipseprojects.io/"
+COAP_SERVER = "coap://192.168.18.8"
 
-GNSS_RESOURCE = "large-update"
-GEO_RESOURCE = "validate"
+GNSS_RESOURCE = "gnss"
+GEO_RESOURCE = "geo"
 
 path_to_str = {
     GNSS_RESOURCE: "GPS",
@@ -16,7 +16,7 @@ RESOURCES = [GNSS_RESOURCE, GEO_RESOURCE]
 REQUEST_TIMEOUT = 5
 
 async def fetch_resource(protocol, resource_path):
-    url = f"{COAP_SERVER}{resource_path}"
+    url = f"{COAP_SERVER}/{resource_path}"
 
     request = Message(code=GET, uri=url)
 
