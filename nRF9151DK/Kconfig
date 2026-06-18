@@ -26,7 +26,7 @@ config COAP_GEO_RESOURCE
 config GNSS_PERIODIC_INTERVAL
     int "Fix interval for periodic GNSS fixes"
     range 10 65535
-    default 120
+    default 30
     help
         Fix interval (in seconds) for periodic fixes
 

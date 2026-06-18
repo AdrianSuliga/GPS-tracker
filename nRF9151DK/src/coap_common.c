@@ -44,7 +44,6 @@ static int server_resolve()
     server4->sin_port = htons(CONFIG_COAP_SERVER_PORT);
 
     inet_ntop(AF_INET, &server4->sin_addr.s_addr, ipv4_addr, sizeof(ipv4_addr));
-    LOG_INF("%s address resolved as %s", CONFIG_COAP_SERVER_HOSTNAME, ipv4_addr);
 
     freeaddrinfo(result);
 
@@ -93,8 +92,6 @@ static int client_init()
         LOG_ERR("Failed to connect to CoAP socket, error %d", err);
         return err;
     }
-
-    LOG_INF("Successfully connected to %s", CONFIG_COAP_SERVER_HOSTNAME);
 
     next_token = sys_rand32_get();
 

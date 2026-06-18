@@ -44,13 +44,14 @@ int main()
     while (true) {
         // Wait for GPS data
         LOG_INF("Waiting for GPS data");
-        err = k_sem_take(&gps_fix_found, K_SECONDS(10));
+        err = k_sem_take(&gps_fix_found, K_SECONDS(60));
 
         // Establish LTE connection to send data
         LOG_INF("Waiting for LTE connection");
         err = lte_lc_func_mode_set(LTE_LC_FUNC_MODE_NORMAL);
         if (err) {
             LOG_ERR("Failed to establish LTE connection");
+            lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
             reset_all_leds();
             continue;
         }
@@ -63,6 +64,7 @@ int main()
         err = coap_init();
         if (err) {
             LOG_ERR("Failed to setup CoAP connection");
+            lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
             reset_all_leds();
             continue;
         }
@@ -80,6 +82,7 @@ int main()
         err = lte_lc_neighbor_cell_measurement(&params);
         if (err < 0) {
             LOG_ERR("Neighbor cell measurement failed, error %d", err);
+            lte_lc_func_mode_set(LTE_LC_FUNC_MODE_DEACTIVATE_LTE);
             reset_all_leds();
             continue;
         }
