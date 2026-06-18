@@ -62,7 +62,7 @@ async def poll(context, gnss, geo):
                 print("New GEO data put")
 
         except Exception as e:
-            print("[ERROR]", e)
+            pass
 
         await asyncio.sleep(POLL_INTERVAL)
 

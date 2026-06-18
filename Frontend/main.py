@@ -1,7 +1,7 @@
 import asyncio
 from aiocoap import *
 
-COAP_SERVER = "coap://192.168.18.8"
+COAP_SERVER = "coap://192.168.18.9"
 
 GNSS_RESOURCE = "gnss"
 GEO_RESOURCE = "geo"
